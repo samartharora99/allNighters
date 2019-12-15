@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <title>Blibo</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://fonts.googleapis.com/css?family=Shadows+Into+Light" rel="stylesheet">
+        <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.7.0/css/all.css' integrity='sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ' crossorigin='anonymous'>
+        <link href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAACGxGwAAAAAAG+hGgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEiERERERERERIhERERERERECIAAAABEREQIiIiIgERERAiIgAAABERECAiIiIgEREQICIgAAABERAgICIiIgERECAgIiAAABEQICAgIiIgEREAICAiIAAREREAICAiIBEREREAICIgEREREREAACAREREREREQABERERERERERGf/wAAz/8AAMAPAADADwAAwAcAAMAHAADAAwAAwAMAAMABAADAAQAA4AEAAPgBAAD+AQAA/4EAAP/xAAD//wAA" rel="icon" type="image/x-icon" />
+        <style>
+
+          header{
+            background: rgb(25, 35, 109);
+            height: 200px;
+            border-top-left-radius: 70px;
+            border-bottom-right-radius: 70px;
+            padding-right: 30px;
+            padding-left: 30px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            max-width: 800px;
+            align-self: auto;
+            margin-top: 2%;
+          }
+
+          input[type=text], select {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+          }
+            
+          #submit {
+            width: 100%;
+            background-color: rgb(25, 35, 109);
+            color: white;
+            padding: 14px 0px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+          }
+          
+          #submit:hover {
+            background-color: rgb(25, 35, 109);
+          }
+          
+          div {
+            border-radius: 5px;
+            background-color: #ebe7e7d5;
+            padding: 20px;
+          }
+
+          #sec {
+            color:white;font-weight:700;
+            padding-top:45px;
+            font-size:200%;
+            font-family:Arial, Helvetica, sans-serif;width: 100%;
+          }
+
+          #start-btn {
+            background-color:white;
+            border:0;
+          }
+                
+                
+        </style>
+</head>
+<body>
+  <br><br>
+    <center>
+      <header>
+      <section id="sec">
+     BLIBO
+      </section>
+    </header>
+    </center>
+        <center>
+          <div style="margin-top: 5%;max-width: 800px;align-self: center">
+              <fieldset class="form-group">
+                <input type="text" name="message" placeholder="Your message..." id="textbox">
+                <button onclick="submit()" id="submit">Submit</button>
+              </fieldset>
+          </div><br>
+          <button id="start-btn" onclick="listenme()">
+            <i class='fas fa-microphone' style='font-size:48px;color:rgb(25, 35, 109);'></i>
+          </button>    
+          </center>      
+                          
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  
+<script>
+
+document.getElementById("textbox").addEventListener("keyup", function(event) {
+  if (event.keyCode === 13) {
+    event.preventDefault();
+    document.getElementById("submit").click();
+  }
+});
+
+var SpeechRecognition = window.webkitSpeechRecognition;
+var recognition = new SpeechRecognition();
+var Textbox = $('#textbox');
+var Content = '';
+recognition.continuous = false;
+recognition.onresult = function(event) {
+  var current = event.resultIndex;
+  var transcript = event.results[current][0].transcript;
+  Content += transcript;
+    Textbox.val(Content);
+    // document.getElementById("submit").click();
+  
+  
+};
+function listenme(){
+  if (Content.length) {
+    Content += ' ';
+  }
+  recognition.start();
+};
+recognition.onend = function(){
+  if(Textbox.val()=="" && Content.length==0){
+    console.log("No message detected");
+    // listenme();
+  }
+}
+Textbox.on('input', function() {
+  Content = $(this).val();
+});
+
+function submit(){
+  var URL="http://localhost:5000/response?message="+Textbox.val();
+  console.log(URL);
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+     document.getElementById("sec").innerHTML = this.responseText;
+     if(this.responseText=="Okay, stopped microphone."){
+       console.log("Stop microphpone");
+       recognition.stop();
+       if ('speechSynthesis' in window) with(speechSynthesis) {
+        utterance = new SpeechSynthesisUtterance("Okay, stopped microphone."); 
+        utterance.rate = 1.4;
+        speak(utterance);
+        utterance.onend = function(){
+          Content = "";
+        };
+       }
+       return;
+     }
+     if(this.responseText!="None"){
+      onClickPlay(this.responseText);
+     }
+     else{
+       Content="";
+      //  listenme();
+     }
+    }
+  };
+  
+  xhttp.open("GET", URL, true);
+  xhttp.send();
+  document.getElementById("textbox").value = "";
+  
+}
+
+function onClickPlay(response){
+      if ('speechSynthesis' in window) with(speechSynthesis) {
+        utterance = new SpeechSynthesisUtterance(response); 
+        utterance.rate = 1.4;
+        speak(utterance);
+        utterance.onend = function(){
+        console.log("I have said it");
+        Content = "";
+        // listenme();
+        };
+      }}
+</script>
+
+
+        
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+</html>
